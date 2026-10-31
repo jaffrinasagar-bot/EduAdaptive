@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduAdaptive | SDG 4 Personalized Question Recommendation Engine</title>
+  <!-- Google Fonts: Poppins (headings) & Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- SCREEN 1: LOGIN FLOW -->
+  <section id="loginScreen" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="sdg-badge" title="UN Sustainable Development Goal 4: Quality Education">
+          <span class="sdg-num">4</span>
+          <span class="sdg-text">QUALITY EDUCATION</span>
+        </div>
+        <h2>EduAdaptive</h2>
+        <p class="login-subtitle">Personalized Practice Question Recommendation Engine</p>
+      </div>
+
+      <div class="login-body">
+        <p class="login-instruction">
+          Enter your Student ID and Name to continue your adaptive practice journey.
+          Returning learners load their profile and history; new IDs start with a fresh mastery baseline!
+        </p>
+
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="inputStudentId">Student ID</label>
+            <input type="number" id="inputStudentId" class="form-input" placeholder="e.g. 2 or 101" required min="1">
+          </div>
+
+          <div class="form-group">
+            <label for="inputStudentName">Student Name</label>
+            <input type="text" id="inputStudentName" class="form-input" placeholder="e.g. Bob Jones" required>
+          </div>
+
+          <button type="submit" id="loginSubmitBtn" class="btn btn-primary btn-block">
+            Start Practicing ➔
+          </button>
+        </form>
+
+        <!-- Quick-Fill Demo Chips for Pitching -->
+        <div class="demo-helpers">
+          <div class="demo-helpers-title">Quick Demo Personas:</div>
+          <div class="chips-container">
+            <button type="button" class="demo-chip" data-id="2" data-name="Bob Jones">
+              🎯 Bob Jones (ID: 2 - Probability Gap)
+            </button>
+            <button type="button" class="demo-chip" data-id="1" data-name="Alice Smith">
+              ⭐ Alice Smith (ID: 1 - High Achiever)
+            </button>
+            <button type="button" class="demo-chip" data-id="3" data-name="Charlie Brown">
+              🌱 Charlie Brown (ID: 3 - Balanced Beginner)
+            </button>
+            <button type="button" class="demo-chip" data-id="99" data-name="Maya Lin">
+              ✨ New Student (ID: 99 - Fresh Profile)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: MAIN APPLICATION DASHBOARD & PRACTICE -->
+  <div id="appScreen" class="app-wrapper" style="display: none;">
+    <!-- App Header -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand">
+          <div class="sdg-badge" title="UN Sustainable Development Goal 4: Quality Education">
+            <span class="sdg-num">4</span>
+            <span class="sdg-text">QUALITY EDUCATION</span>
+          </div>
+          <div class="brand-title">
+            <h1>EduAdaptive <span class="badge-ai">AI Recommender</span></h1>
+            <p class="tagline">Personalized practice engine powered by scikit-learn & adaptive mastery modeling</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <!-- Active Student Profile Badge -->
+          <div class="student-profile-pill">
+            <span class="avatar-icon">🎓</span>
+            <div class="profile-info">
+              <span id="headerStudentName" class="profile-name">Student Name</span>
+              <span id="headerStudentMeta" class="profile-meta">ID: --</span>
+            </div>
+          </div>
+
+          <!-- Switch Student / Log Out Button -->
+          <button id="logoutBtn" class="btn btn-outline" title="Switch or log into another student profile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Switch Student
+          </button>
+
+          <!-- Scoped Reset Demo Button -->
+          <button id="resetBtn" class="btn btn-outline-danger" title="Reset current student's attempt history and mastery state">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset My Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="practice-tab">
+            <span class="tab-icon">🎯</span> Adaptive Practice
+          </button>
+          <button class="tab-btn" data-tab="dashboard-tab">
+            <span class="tab-icon">📊</span> Learner Analytics
+          </button>
+          <button class="tab-btn" data-tab="ml-tab">
+            <span class="tab-icon">🧠</span> ML Architecture & Pitch
+          </button>
+        </div>
+        <div id="liveStudentBadge" class="persona-indicator">Loading profile...</div>
+      </div>
+    </header>
+
+    <!-- Main Content Areas -->
+    <main class="main-content">
+      
+      <!-- TAB 1: PRACTICE MODE -->
+      <section id="practice-tab" class="tab-content active">
+        <div class="practice-layout">
+          <!-- Main Active Question Card -->
+          <div class="question-main-panel">
+            <div id="loadingQuestion" class="card loading-card" style="display:none;">
+              <div class="spinner"></div>
+              <p>AI is evaluating your learner profile to select the optimal challenge...</p>
+            </div>
+
+            <div id="questionCard" class="card question-card">
+              <!-- Question Metadata Header -->
+              <div class="question-meta-bar">
+                <div class="meta-left">
+                  <span id="qTopicBadge" class="badge topic-badge">Topic</span>
+                  <span id="qDifficultyBadge" class="badge diff-badge">Difficulty 1/5</span>
+                  <span id="qZpdBadge" class="badge zpd-badge" title="Zone of Proximal Development">ZPD Optimal</span>
+                </div>
+                <div class="meta-right">
+                  <span class="prob-tag" id="qSuccessProb">Predicted Success: --%</span>
+                </div>
+              </div>
+
+              <!-- Explainable AI Recommendation Reason -->
+              <div class="ai-rationale-box">
+                <div class="rationale-icon">💡</div>
+                <div class="rationale-content">
+                  <strong>Why Recommended:</strong>
+                  <p id="qReasoningText">Analyzing learning trajectory...</p>
+                </div>
+              </div>
+
+              <!-- Question Body -->
+              <div class="question-body">
+                <h2 id="qText" class="question-text">Select an option to begin practice...</h2>
+                
+                <!-- Multiple Choice Options -->
+                <div id="optionsList" class="options-grid">
+                  <!-- Dynamically populated options -->
+                </div>
+              </div>
+
+              <!-- Interactive Action / Submit Bar -->
+              <div class="question-actions">
+                <div class="action-info">
+                  <span id="selectionHint" class="text-muted">Select an answer above</span>
+                </div>
+                <div class="action-buttons">
+                  <button id="submitAnswerBtn" class="btn btn-primary" disabled>
+                    Submit Answer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Instant Feedback / Mastery Delta Panel (Hidden by default) -->
+              <div id="feedbackPanel" class="feedback-panel" style="display:none;">
+                <div id="feedbackHeader" class="feedback-header">
+                  <div id="feedbackIcon" class="feedback-icon">✓</div>
+                  <div class="feedback-title-box">
+                    <h3 id="feedbackTitle">Correct!</h3>
+                    <p id="feedbackExplanation">Explanation goes here.</p>
+                  </div>
+                </div>
+
+                <!-- Real-time Mastery Diff Visualizer -->
+                <div class="mastery-diff-box">
+                  <div class="diff-label">Real-time Mastery Update:</div>
+                  <div class="diff-visual">
+                    <span id="diffTopicName" class="diff-topic">Topic</span>
+                    <span id="diffOldVal" class="diff-val old">0%</span>
+                    <span class="diff-arrow">➔</span>
+                    <span id="diffNewVal" class="diff-val new">0%</span>
+                    <span id="diffDeltaPill" class="badge diff-delta-pill">+0%</span>
+                  </div>
+                </div>
+
+                <div class="feedback-footer">
+                  <button id="nextQuestionBtn" class="btn btn-success">
+                    Next Recommended Question ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Side: Recommendation Queue & Quick Summary -->
+          <aside class="practice-sidebar">
+            <div class="card sidebar-card">
+              <h3>Upcoming in AI Queue</h3>
+              <p class="sidebar-sub">Ranked to continuously bridge knowledge gaps</p>
+              <div id="recommendationQueue" class="queue-list">
+                <!-- Dynamically populated upcoming items -->
+              </div>
+            </div>
+
+            <div class="card sidebar-card quick-profile-card">
+              <h3>Current Mastery Snap</h3>
+              <div id="quickMasteryBars" class="quick-bars">
+                <!-- Dynamically populated mini progress bars -->
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- TAB 2: LEARNER ANALYTICS DASHBOARD -->
+      <section id="dashboard-tab" class="tab-content">
+        <!-- KPI Metric Cards -->
+        <div class="kpi-grid">
+          <div class="card kpi-card">
+            <div class="kpi-icon icon-mastery">🎯</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Overall Mastery</span>
+              <span id="kpiOverallMastery" class="kpi-value">--%</span>
+              <span class="kpi-sub">Across all 4 core curricula</span>
+            </div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-icon icon-attempts">📝</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Questions Attempted</span>
+              <span id="kpiTotalAttempts" class="kpi-value">--</span>
+              <span class="kpi-sub">Logged in database</span>
+            </div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-icon icon-accuracy">📈</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Accuracy Rate</span>
+              <span id="kpiAccuracyRate" class="kpi-value">--%</span>
+              <span class="kpi-sub">Historical correctness</span>
+            </div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-icon icon-focus">⚡</div>
+            <div class="kpi-data">
+              <span class="kpi-label">Priority Growth Topic</span>
+              <span id="kpiFocusTopic" class="kpi-value">--</span>
+              <span class="kpi-sub">Targeted by AI Recommender</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-grid">
+          <!-- Radar / Bar Mastery Chart -->
+          <div class="card chart-card">
+            <div class="card-header-flex">
+              <div>
+                <h3>Topic Mastery Breakdown</h3>
+                <p class="chart-subtitle">Competence distribution modeled by ML</p>
+              </div>
+              <div class="chart-toggles">
+                <button id="chartTypeRadar" class="btn btn-sm btn-outline active">Radar</button>
+                <button id="chartTypeBar" class="btn btn-sm btn-outline">Bar</button>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="masteryChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Adaptive Difficulty Progression Timeline -->
+          <div class="card chart-card">
+            <div class="card-header-flex">
+              <div>
+                <h3>Adaptive Difficulty Progression</h3>
+                <p class="chart-subtitle">Chronological difficulty scaling & answer outcomes</p>
+              </div>
+              <span class="badge diff-badge">Levels 1 to 5</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="progressionChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Attempt Log Table -->
+        <div class="card table-card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Recent Practice History</h3>
+              <p class="chart-subtitle">Live log of attempts updating the learner profile</p>
+            </div>
+            <span id="historyCountBadge" class="badge">Last 10 Attempts</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Attempt #</th>
+                  <th>Topic</th>
+                  <th>Difficulty</th>
+                  <th>Outcome</th>
+                  <th>Question Excerpt</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="attemptHistoryBody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ML ARCHITECTURE & HACKATHON PITCH -->
+      <section id="ml-tab" class="tab-content">
+        <div class="card pitch-card">
+          <div class="pitch-badge-row">
+            <span class="sdg-badge-large">UN SDG 4: Target 4.1 & 4.4</span>
+            <span class="badge-tech">scikit-learn • FastAPI • SQLite</span>
+          </div>
+          <h2>Engine Architecture & Pedagogical Foundations</h2>
+          <p class="pitch-intro">
+            Traditional educational platforms either show static question sequences or rely on simple random selection.
+            This leaves lagging students frustrated and advanced students unengaged.
+            <strong>EduAdaptive</strong> solves this by turning real-time predictive ML into an intelligent tutor.
+          </p>
+
+          <div class="arch-cards-grid">
+            <div class="arch-card">
+              <div class="arch-icon">1️⃣</div>
+              <h3>Mastery Classifier (Supervised ML)</h3>
+              <p>
+                Trained on student historical logs to predict \(P(\text{correct})\).
+                Uses <strong>Logistic Regression</strong> with features:
+              </p>
+              <ul class="arch-list">
+                <li><strong>Topic Accuracy:</strong> Laplace-smoothed empirical correctness rate.</li>
+                <li><strong>Directional Streak:</strong> Momentum tracker (-3 to +3).</li>
+                <li><strong>Difficulty Rating:</strong> Cognitive demand (1 to 5).</li>
+                <li><strong>Practice Volume:</strong> Log-scaled cumulative repetitions.</li>
+              </ul>
+            </div>
+
+            <div class="arch-card">
+              <div class="arch-icon">2️⃣</div>
+              <h3>Zone of Proximal Development (ZPD)</h3>
+              <p>
+                Based on educational psychologist Lev Vygotsky’s research, optimal learning occurs when tasks are challenging yet achievable.
+              </p>
+              <ul class="arch-list">
+                <li><strong>Target Probability Window:</strong> Recommends questions with \(P(\text{success}) \approx 0.60 - 0.75\).</li>
+                <li><strong>Frustration Avoidance:</strong> Penalizes items with \(P < 0.35\).</li>
+                <li><strong>Boredom Avoidance:</strong> Penalizes items with \(P > 0.90\).</li>
+              </ul>
+            </div>
+
+            <div class="arch-card">
+              <div class="arch-icon">3️⃣</div>
+              <h3>Dynamic Online Mastery Update</h3>
+              <p>
+                When a question is answered, the system executes an immediate Bayesian residual update:
+              </p>
+              <div class="code-box">
+                <code>ΔM = η · (actual - predicted) · (diff / 5)</code>
+              </div>
+              <p class="arch-subtext">
+                Solving a Level 5 problem yields significant mastery growth; failing a Level 1 problem adjusts readiness down to rebuild foundations.
+              </p>
+            </div>
+          </div>
+
+          <div class="pitch-demo-guide">
+            <h3>Suggested Live Pitch Flow for Judges</h3>
+            <ol class="demo-steps">
+              <li><strong>Login as Bob Jones (ID: 2)</strong>: Point out in the dashboard that Bob has strong Algebra but an acute gap in Probability (28%).</li>
+              <li><strong>Switch to Practice Mode</strong>: Show that the AI automatically prioritized a Level 2 Probability question with clear XAI reasoning.</li>
+              <li><strong>Answer the Question</strong>: Watch the live mastery diff badge immediately update Probability mastery from 28% to ~40%.</li>
+              <li><strong>Switch Student to Alice Smith (ID: 1)</strong>: Show how the recommendations instantly adapt to Level 4-5 problems across all topics.</li>
+              <li><strong>Create a New Student (e.g. Maya Lin, ID: 99)</strong>: Demonstrates instant self-registration and baseline profile initialization!</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <p>EduAdaptive • Built for SDG 4 (Quality Education) Hackathon Prototype • Python FastAPI + scikit-learn + SQLite</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
